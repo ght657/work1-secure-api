@@ -1,0 +1,8 @@
+__pycache__/
+*.pyc
+.venv/
+instance/
+.pytest_cache/
+bandit-report.*
+pip-audit-report.*
+.DS_Store

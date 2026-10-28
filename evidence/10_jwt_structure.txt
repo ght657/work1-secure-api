@@ -1,0 +1,16 @@
+JWT structure (header.payload.signature):
+
+HEADER  : {
+  "alg": "HS256",
+  "typ": "JWT"
+}
+PAYLOAD : {
+  "sub": "2",
+  "username": "alice",
+  "role": "user",
+  "iat": 1793067895,
+  "exp": 1793071495
+}
+
+SIGNATURE (HMAC-SHA256 over header+payload with the server's SECRET_KEY):
+_evLcrIsCCZrLZYbi1AnkF5KzL8Ax22gRxcXDQMAlZg

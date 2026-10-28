@@ -1,0 +1,19 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.9.6, pytest-8.3.3, pluggy-1.6.0 -- /Users/guhaotian/Desktop/work1-secure-api/.venv/bin/python3
+cachedir: .pytest_cache
+rootdir: /Users/guhaotian/Desktop/work1-secure-api
+collecting ... collected 11 items
+
+tests/test_api.py::test_login_success_issues_token PASSED                [  9%]
+tests/test_api.py::test_login_wrong_password_rejected PASSED             [ 18%]
+tests/test_api.py::test_login_unknown_user_same_error_as_wrong_password PASSED [ 27%]
+tests/test_api.py::test_passwords_stored_as_bcrypt_hashes PASSED         [ 36%]
+tests/test_api.py::test_data_endpoint_denied_without_token PASSED        [ 45%]
+tests/test_api.py::test_data_endpoint_denied_with_invalid_token PASSED   [ 54%]
+tests/test_api.py::test_data_endpoint_works_with_valid_token PASSED      [ 63%]
+tests/test_api.py::test_create_post_requires_token PASSED                [ 72%]
+tests/test_api.py::test_sqli_payload_treated_as_data PASSED              [ 81%]
+tests/test_api.py::test_sqli_union_payload_does_not_dump_table PASSED    [ 90%]
+tests/test_api.py::test_xss_payload_is_escaped_in_response PASSED        [100%]
+
+============================== 11 passed in 2.20s ==============================

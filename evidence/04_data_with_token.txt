@@ -1,0 +1,4 @@
+>>> 4) GET /api/data WITH valid JWT (200, data returned)
+{"posts":[{"author":"alice","body":"This API is protected with JWT authentication.","created_at":"2026-10-27T02:24:51.973846","id":1,"title":"Welcome to the secure API"},{"author":"bob","body":"SQLi and XSS protections are enabled.","created_at":"2026-10-27T02:24:51.973851","id":2,"title":"Security lab demo"}],"user":"alice"}
+
+HTTP 200

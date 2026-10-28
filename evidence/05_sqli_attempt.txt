@@ -1,0 +1,4 @@
+>>> 5) SQL injection attempt on GET /api/users/search (payload treated as data)
+{"results":[]}
+
+HTTP 200

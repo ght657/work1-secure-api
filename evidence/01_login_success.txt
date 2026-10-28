@@ -1,0 +1,3 @@
+>>> 1) POST /auth/login - successful authentication
+{"token":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIyIiwidXNlcm5hbWUiOiJhbGljZSIsInJvbGUiOiJ1c2VyIiwiaWF0IjoxNzkzMDY3ODkyLCJleHAiOjE3OTMwNzE0OTJ9.UyDOleSeUZvxYZHzGcFz_8TdcaW4gjwvRh-OiTYlzRQ","user":{"id":2,"role":"user","username":"alice"}}
+

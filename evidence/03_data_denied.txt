@@ -1,0 +1,4 @@
+>>> 3) GET /api/data WITHOUT token (must be denied, 401)
+{"error":"Missing or malformed Authorization header"}
+
+HTTP 401
