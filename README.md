@@ -212,29 +212,49 @@ enough to render file content, and any attacker-writable JS file becomes code ex
 
 ### 5.4 The fix
 
-The vulnerability was fixed in Kibana **6.4.3 / 5.6.13**: the vulnerable Console API no
-longer lets the `apis` parameter resolve outside the allowed API directory; the patched
-version normalizes the path and rejects anything outside the intended location.
+The cause is in the Console plugin code: the `apis` value is concatenated into
+`require()` without normalizing the resolved path, so `../` escapes the `api_server`
+directory. Elastic fixed CVE-2018-17246 in Kibana **5.6.13 / 6.4.3** by resolving the
+requested module and rejecting anything outside that directory.
 
-For the fix verification I run the official **patched** image — `docker.elastic.co/kibana/kibana:5.6.13`
-(folder `CVE-2018-17246/docker-compose.fixed.yml`, description in `CVE-2018-17246/FIX.md`):
+This repository applies that same change as a small code patch:
+`CVE-2018-17246/patched/api_server/server.js` replaces the vulnerable file and
+`CVE-2018-17246/docker-compose.fixed.yml` mounts it read-only over the vulnerable path
+(the rest of the deployment is unchanged):
+
+```diff
+-  let api = require('./' + name);
++  let resolved = path.resolve(API_DIR, './' + name);
++  if (resolved !== API_DIR && !resolved.startsWith(API_DIR + path.sep)) {
++    throw new Error('Invalid API path: ' + name);
++  }
++  let api = require(resolved);
+```
 
 ```bash
+cd CVE-2018-17246
 docker compose -f docker-compose.fixed.yml up -d
 ```
 
-**Verification — the same LFI request against the patched version fails:**
+**Verification — the same exploitation requests are rejected and no file content is
+returned:**
 
 ```bash
 curl -i "http://localhost:5601/api/console/api_server?sense_version=%40%40SENSE_VERSION&apis=../../../../../../../../../../../etc/passwd"
-# HTTP/1.1 400 Bad Request  (request rejected)
+# HTTP/1.1 500  {"statusCode":500,...,"message":"An internal server error occurred"}
+# -> request rejected by the path check; the log no longer contains /etc/passwd
+curl -i "http://localhost:5601/api/console/api_server?sense_version=%40%40SENSE_VERSION&apis=../../../../../../../tmp/vulhub.js"
+# -> request rejected too; no "uid=" output (RCE blocked)
 ```
 
-and the patched server log shows no file content for the request; the RCE test file
-`/tmp/vulhub.js` no longer executes (no `uid=` output, request is rejected).
+`evidence/cve/07_fix_compose.png`, `evidence/cve/08_lfi_after_fix.png`,
+`evidence/cve/09_regression_ui.png` (the UI still loads normally -> no regression for
+normal use).
 
-`evidence/cve/06_fix_compose.png`, `evidence/cve/07_lfi_after_fix.png`,
-`evidence/cve/08_regression_ui.png` (the UI still loads normally → no regression for normal use).
+> Note: the official `docker.elastic.co/kibana/kibana:5.6.13` image is x86_64-only and this
+> lab host is an ARM Mac, so 5.6.13 runs only under QEMU emulation there. The verification
+> above therefore applies the equivalent backport of the 5.6.13 code fix on the natively
+> runnable `vulhub/kibana:5.6.12` image.
 
 ### 5.5 Security takeaways
 

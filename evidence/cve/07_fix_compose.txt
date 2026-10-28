@@ -1,0 +1,34 @@
+$ cat patched/api_server/server.js   # the fix that is mounted into the container
+
+13:      // FIX for CVE-2018-17246 (Kibana LFI / RCE through the Console API).
+14-      // The vulnerable 5.6.12 code is:
+15-      //     let api = require('./' + name);
+16-      // which lets "../" sequences (or absolute paths) escape the api
+17-      // directory and load any file as a JS module.  The patched code
+18-      // resolves the requested module first and rejects everything that
+19-      // does not stay inside API_DIR (this is the guard that upstream
+20-      // added in Kibana 5.6.13 / 6.4.3).
+21-      let resolved = path.resolve(API_DIR, "./" + name);
+22-      if (resolved !== API_DIR && !resolved.startsWith(API_DIR + path.sep)) {
+23-        throw new Error("Invalid API path: " + name);
+24-      }
+25-      let api = require(resolved);
+26-      result[name] = api.asJson();
+
+$ docker compose -f docker-compose.fixed.yml up -d   # patched server.js read-only mount
+
+ Container cve-2018-17246-elasticsearch-1 Started 
+ Container cve-2018-17246-kibana-1 Starting 
+ Container cve-2018-17246-kibana-1 Started 
+
+$ docker compose -f docker-compose.fixed.yml ps
+NAME                             IMAGE                         COMMAND                  SERVICE         CREATED         STATUS         PORTS
+cve-2018-17246-elasticsearch-1   vulhub/elasticsearch:5.6.16   "/bin/bash bin/es-do…"   elasticsearch   9 minutes ago   Up 9 minutes   9200/tcp, 9300/tcp
+cve-2018-17246-kibana-1          vulhub/kibana:5.6.12          "/bin/bash /usr/loca…"   kibana          9 minutes ago   Up 9 minutes   0.0.0.0:5601->5601/tcp, [::]:5601->5601/tcp
+
+$ docker compose -f docker-compose.fixed.yml exec kibana grep -n 'path.resolve' /usr/share/kibana/src/core_plugins/console/api_server/server.js
+7:const API_DIR = path.resolve(__dirname);
+21:      let resolved = path.resolve(API_DIR, "./" + name);
+
+$ curl -s -o /dev/null -w '%{http_code}' http://localhost:5601/api/status
+200

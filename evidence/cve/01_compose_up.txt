@@ -1,0 +1,13 @@
+$ cd CVE-2018-17246 && docker compose up -d
+
+ Container cve-2018-17246-elasticsearch-1 Started 
+ Container cve-2018-17246-kibana-1 Starting 
+ Container cve-2018-17246-kibana-1 Started 
+
+$ docker compose ps
+NAME                             IMAGE                         COMMAND                  SERVICE         CREATED         STATUS         PORTS
+cve-2018-17246-elasticsearch-1   vulhub/elasticsearch:5.6.16   "/bin/bash bin/es-do…"   elasticsearch   9 minutes ago   Up 9 minutes   9200/tcp, 9300/tcp
+cve-2018-17246-kibana-1          vulhub/kibana:5.6.12          "/bin/bash /usr/loca…"   kibana          9 minutes ago   Up 9 minutes   0.0.0.0:5601->5601/tcp, [::]:5601->5601/tcp
+
+$ curl -s -o /dev/null -w '%{http_code}' http://localhost:5601/api/status
+200

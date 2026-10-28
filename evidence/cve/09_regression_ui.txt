@@ -1,0 +1,5 @@
+$ curl -s http://localhost:5601/api/status
+{"name":"fd562c43fc4e","version":"5.6.12","buildNum":15653,"buildSha":"a07347478b7a3b1661cfb77c149fd15bdeb8921d","uuid":"58db6453-5f8d-422c-9600-61439e25535b","status":{"overall":{"state":"green","title":"Green","nickname":"Looking good","icon":"success","since":"2026-10-28T06:43:45.384Z"},"statuses
+
+$ curl -s http://localhost:5601/app/kibana | head -c 200
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"><meta name="viewport" content="width=device-width"><title>Kibana</title><style>

