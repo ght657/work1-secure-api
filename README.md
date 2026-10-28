@@ -9,8 +9,8 @@ and a full analysis of a real CVE reproduced in a Docker environment (Kibana LFI
 
 ## 1. Project & team
 
-- Repository: `https://github.com/hdu-23320209/work1-secure-api` (public)
-- Stack: Python 3.13 / Flask 3.1.3, PyJWT (HS256 tokens), bcrypt password hashing,
+- Repository: `https://github.com/ght657/work1-secure-api` (public)
+- Stack: Python 3.9 / Flask 3.1.3, PyJWT (HS256 tokens), bcrypt password hashing,
   SQLite via SQLAlchemy 2, pytest.
 - The API exposes three endpoints:
   - `POST /auth/login` — issues a signed JWT after verifying the password hash.
@@ -25,8 +25,8 @@ Workflow file: `.github/workflows/ci.yml`, triggered on every push to `main`.
 | Job | Tooling | What it does | Evidence |
 |---|---|---|---|
 | `test` | pytest 8 | runs the 11-test suite | `evidence/07_pytest_run.png` |
-| `sast` | Bandit 1.9 | static analysis of `app/`, `tests/` (JSON report uploaded as artifact) | `evidence/08_bandit_report.png` |
-| `sca` | pip-audit 2.10 | dependencies audit (JSON report uploaded as artifact) | `evidence/09_pip_audit_report.png` |
+| `sast` | Bandit 1.8.0 | static analysis of `app/`, `tests/` (JSON report uploaded as artifact) | `evidence/08_bandit_report.png` |
+| `sca` | pip-audit 2.8.0 | dependencies audit (JSON report uploaded as artifact) | `evidence/09_pip_audit_report.png` |
 
 The pipeline fails if any test fails or any SAST/SCA finding remains, so a red pipeline
 means a fix must be pushed before merge.
@@ -111,14 +111,14 @@ returns an empty list — no error and no full-table dump.
 
 ### 4.3 XSS attempt (stored content)
 
-`POST /api/posts` with `content: "<script>alert('xss')</script>"`; the server stores the
+`POST /api/posts` with `title: "<script>alert('xss')</script>"`; the server stores the
 raw string but escapes it on output (`markupsafe.escape` + `jsonify`), so the returned
 payload is `<script>alert(&#39;xss&#39;)</script>` — a browser toggles the text, it does not
 execute it. (Re-production with a browser render is shown in `evidence/06_xss_readback.png`.)
 
 ### 4.4 JWT handling
 
-- No token → `401 {"error": "unauthorized"}` (`evidence/03_data_denied.png`)
+- No token → `401 {"error": "Missing or malformed Authorization header"}` (`evidence/03_data_denied.png`)
 - Valid token → `200` + protected data (`evidence/04_data_with_token.png`)
 - Token with tampered payload → `401` (signature check with HS256)
 - Expired token → `401` (60-minute expiry)
@@ -128,7 +128,7 @@ execute it. (Re-production with a browser render is shown in `evidence/06_xss_re
 ### 4.5 Hashing
 
 Passwords are stored as bcrypt hashes (12 rounds) and never returned by any endpoint
-(test `test_password_not_returned`).
+(test `test_passwords_stored_as_bcrypt_hashes`).
 
 ## 5. CVE Analysis — CVE-2018-17246 (Kibana 5.6.12 / 6.4.2 — local file inclusion + code execution)
 

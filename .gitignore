@@ -6,3 +6,6 @@ instance/
 bandit-report.*
 pip-audit-report.*
 .DS_Store
+
+# local helper (not part of the submission)
+AUTOFILL.md

