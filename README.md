@@ -31,6 +31,10 @@ Workflow file: `.github/workflows/ci.yml`, triggered on every push to `main`.
 The pipeline fails if any test fails or any SAST/SCA finding remains, so a red pipeline
 means a fix must be pushed before merge.
 
+- Workflow page (all runs): <https://github.com/ght657/work1-secure-api/actions/workflows/ci.yml>
+- Last verified green run: <https://github.com/ght657/work1-secure-api/actions/runs/40628194491>
+  (jobs: Functional tests 28 s, SAST 18 s, SCA 34 s — all successful)
+
 ## 3. Evidence — SAST, SCA, tests
 
 ### 3.1 Automated tests
